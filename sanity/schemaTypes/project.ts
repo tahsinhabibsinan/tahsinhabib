@@ -1,0 +1,117 @@
+import { defineField, defineType } from "sanity";
+import { CaseIcon } from "@sanity/icons";
+import { requiredSlug, requiredTitle, requiredYear, optionalHttpUrl } from "./validation";
+
+export default defineType({
+  name: "project",
+  title: "Project",
+  type: "document",
+  icon: CaseIcon,
+  groups: [
+    { name: "content", title: "Content", default: true },
+    { name: "media", title: "Media" },
+    { name: "meta", title: "Meta & SEO" },
+  ],
+  fields: [
+    defineField({ name: "title", title: "Title", type: "string", group: "content", validation: requiredTitle }),
+    defineField({
+      name: "slug",
+      title: "Slug",
+      type: "slug",
+      group: "content",
+      options: { source: "title", maxLength: 96 },
+      validation: requiredSlug,
+    }),
+    defineField({ name: "year", title: "Year", type: "string", group: "content", validation: requiredYear }),
+    defineField({
+      name: "category",
+      title: "Category",
+      type: "string",
+      group: "content",
+      validation: (Rule) => Rule.required().max(60),
+    }),
+    defineField({
+      name: "role",
+      title: "Role",
+      type: "string",
+      group: "content",
+      description: "e.g. Founder · Full-Stack Developer",
+      validation: (Rule) => Rule.max(120),
+    }),
+    defineField({
+      name: "shortDescription",
+      title: "Short description",
+      type: "text",
+      rows: 3,
+      group: "content",
+      description: "One or two sentences — used on cards, the project header, and as the default SEO description.",
+      validation: (Rule) => Rule.required().min(10).max(280),
+    }),
+    defineField({ name: "services", title: "Services", type: "array", of: [{ type: "string" }], group: "content" }),
+    defineField({ name: "technologies", title: "Technologies", type: "array", of: [{ type: "string" }], group: "content" }),
+    defineField({ name: "challenge", title: "Challenge", type: "text", rows: 4, group: "content", validation: (Rule) => Rule.required().min(10).max(2000) }),
+    defineField({ name: "solution", title: "Solution", type: "text", rows: 4, group: "content", validation: (Rule) => Rule.required().min(10).max(2000) }),
+    defineField({ name: "process", title: "Process", type: "text", rows: 4, group: "content", validation: (Rule) => Rule.required().min(10).max(2000) }),
+    defineField({ name: "result", title: "Result", type: "text", rows: 4, group: "content", validation: (Rule) => Rule.required().min(10).max(2000) }),
+
+    defineField({
+      name: "thumbnail",
+      title: "Thumbnail",
+      type: "cloudinary.asset",
+      group: "media",
+      description: "Click Browse to search, upload, or select an image from your Cloudinary Media Library.",
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({
+      name: "gallery",
+      title: "Gallery",
+      type: "array",
+      of: [{ type: "cloudinary.asset" }],
+      group: "media",
+      validation: (Rule) => Rule.max(12).warning("More than 12 gallery images may slow the project page down."),
+    }),
+    defineField({
+      name: "video",
+      title: "Video",
+      type: "cloudinary.asset",
+      group: "media",
+      description: "Optional. Select a video asset from Cloudinary — resource type is captured automatically.",
+    }),
+
+    defineField({ name: "liveUrl", title: "Live URL", type: "url", group: "meta", validation: optionalHttpUrl }),
+    defineField({ name: "githubUrl", title: "GitHub URL", type: "url", group: "meta", validation: optionalHttpUrl }),
+    defineField({
+      name: "featured",
+      title: "Featured on homepage",
+      type: "boolean",
+      group: "meta",
+      initialValue: false,
+      description: "Featured projects appear in the homepage showcase.",
+    }),
+    defineField({
+      name: "sortOrder",
+      title: "Sort order",
+      type: "number",
+      group: "meta",
+      initialValue: 0,
+      description: "Lower numbers appear first on the Work page and in the homepage showcase.",
+      validation: (Rule) => Rule.integer(),
+    }),
+    defineField({
+      name: "publishedAt",
+      title: "Published at",
+      type: "datetime",
+      group: "meta",
+      initialValue: () => new Date().toISOString(),
+      validation: (Rule) => Rule.required(),
+    }),
+    defineField({ name: "seo", title: "SEO", type: "seo", group: "meta" }),
+  ],
+  orderings: [
+    { title: "Sort order", name: "sortOrderAsc", by: [{ field: "sortOrder", direction: "asc" }] },
+    { title: "Published date, new to old", name: "publishedAtDesc", by: [{ field: "publishedAt", direction: "desc" }] },
+  ],
+  preview: {
+    select: { title: "title", subtitle: "category", media: "thumbnail" },
+  },
+});
